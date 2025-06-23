@@ -1,0 +1,19 @@
+const filteredStudents = students.filter(student => {
+    const deptMatch = activeDept === 'All' || student.department === activeDept;
+    const yearMatch = activeYear === 'All' || student.year === activeYear;
+    return deptMatch && yearMatch;
+  });
+  
+  const toggleRow = (studentId: string) => {
+=======
+  const [showJobDialog, setShowJobDialog] = useState(false);
+  const [jobDescription, setJobDescription] = useState('');
+  const [shortlistedStudents, setShortlistedStudents] = useState<Student[]>([]);
+
+  const filteredStudents = students.filter(student => {
+    const deptMatch = activeDept === 'All' || student.department === activeDept;
+    const yearMatch = activeYear === 'All' || student.year === activeYear;
+    return deptMatch && yearMatch;
+  });
+  
+  const toggleRow = (studentId: string) => {
