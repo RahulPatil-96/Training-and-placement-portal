@@ -1,13 +1,13 @@
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { MainLayout } from '@/components/layout/main-layout';
+import { EnhancedMainLayout } from '@/components/layout/enhanced-main-layout';
 import { StudentsProvider } from '@/contexts/StudentsContext';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <StudentsProvider>
-        <MainLayout />
+        <EnhancedMainLayout />
       </StudentsProvider>
       <Toaster />
     </ThemeProvider>

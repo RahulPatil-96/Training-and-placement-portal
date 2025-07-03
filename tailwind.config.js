@@ -73,10 +73,26 @@ export default {
             height: '0',
           },
         },
+        'wave': {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'wave': 'wave 1.5s linear infinite',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      fontSize: {
+        '2xs': '0.625rem',
+      },
+      minHeight: {
+        '44': '11rem',
       },
     },
   },
