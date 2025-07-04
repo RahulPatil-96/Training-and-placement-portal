@@ -7,7 +7,8 @@ import {
   XCircle,
   Plus,
   Save,
-  RefreshCw
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import { 
   Table, 
@@ -48,10 +49,13 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { ColumnMapping, ConflictRecord } from '@/lib/data-pipeline/types';
+import { DataMappingManager } from './data-mapping-manager';
+import { MappingValidationResult, DataTransferResult } from '@/lib/data-mapping/data-mapper';
 
 interface HeaderMappingProps {
   newColumns?: ColumnMapping[];
-  conflicts?: ConflictRecord[]; // Added conflicts prop
+  conflicts?: ConflictRecord[];
+  rawData?: Record<string, unknown>[];
   onUpdateMapping?: (mapping: ColumnMapping) => void;
   onSaveMappings?: () => void;
   onRefreshData?: () => void;
@@ -77,7 +81,8 @@ function areMappingsEqual(a: ColumnMapping[], b: ColumnMapping[]) {
 
 export function HeaderMapping({ 
   newColumns = [], 
-  conflicts = [], // Added conflicts default
+  conflicts = [],
+  rawData = [],
   onUpdateMapping = () => {},
   onSaveMappings = () => {},
   onRefreshData = () => {}
@@ -85,6 +90,9 @@ export function HeaderMapping({
   const [mappings, setMappings] = useState<ColumnMapping[]>([]);
   const [selectedColumn, setSelectedColumn] = useState<ColumnMapping | null>(null);
   const [showNewColumnDialog, setShowNewColumnDialog] = useState(false);
+  const [showDataMappingManager, setShowDataMappingManager] = useState(false);
+  const [validationResult, setValidationResult] = useState<MappingValidationResult | null>(null);
+  const [transferResult, setTransferResult] = useState<DataTransferResult | null>(null);
   const [newColumnData, setNewColumnData] = useState({
     name: '',
     type: 'string',
@@ -99,7 +107,6 @@ export function HeaderMapping({
     }
   }, [newColumns, mappings]);
 
-
   const handleUpdateMapping = (index: number, action: 'map' | 'skip') => {
     const updatedMappings = [...mappings];
     updatedMappings[index] = {
@@ -110,30 +117,9 @@ export function HeaderMapping({
     onUpdateMapping(updatedMappings[index]);
   };
 
-  // New state and handlers for conflict resolution
-  const [selectedConflict, setSelectedConflict] = useState<ConflictRecord | null>(null);
-  const [resolvedConflicts, setResolvedConflicts] = useState<Map<string, Record<string, unknown>>>(new Map());
-
   const handleResolveConflict = (prn: string, field: string, value: unknown) => {
-    setResolvedConflicts(prev => {
-      const newMap = new Map(prev);
-      const existing = newMap.get(prn) || {};
-      existing[field] = value;
-      newMap.set(prn, existing);
-      return newMap;
-    });
-  };
-
-  const applyResolvedConflicts = () => {
-    resolvedConflicts.forEach((_fields, prn) => {
-      // TODO: Apply resolved fields to data source or state
-    });
-    setSelectedConflict(null);
-    setResolvedConflicts(new Map());
-    toast({
-      title: "Conflicts resolved",
-      description: "All conflicts have been resolved and applied."
-    });
+    // Implementation for conflict resolution
+    console.log('Resolving conflict:', { prn, field, value });
   };
 
   const handleAddNewColumn = () => {
@@ -180,11 +166,24 @@ export function HeaderMapping({
       return;
     }
     
-    onSaveMappings();
-    toast({
-      title: "Mappings saved",
-      description: "Column mappings have been saved successfully."
-    });
+    // Show the data mapping manager instead of just calling onSaveMappings
+    setShowDataMappingManager(true);
+  };
+
+  const handleMappingComplete = (result: DataTransferResult) => {
+    setTransferResult(result);
+    setShowDataMappingManager(false);
+    
+    if (result.success) {
+      toast({
+        title: "Data mapping completed successfully",
+        description: `${result.transferredCount} new records added, ${result.duplicateCount} records updated.`
+      });
+    }
+  };
+
+  const handleValidationResult = (result: MappingValidationResult) => {
+    setValidationResult(result);
   };
 
   const mappedCount = Array.isArray(mappings) ? mappings.filter(m => m.action === 'map').length : 0;
@@ -269,9 +268,6 @@ export function HeaderMapping({
               </div>
             ))}
           </CardContent>
-          <CardFooter>
-            <Button onClick={applyResolvedConflicts}>Apply Resolutions</Button>
-          </CardFooter>
         </Card>
       )}
       
@@ -392,13 +388,33 @@ export function HeaderMapping({
           <Button variant="outline" onClick={() => setMappings(newColumns || [])}>
             Reset Mapping
           </Button>
-          <Button onClick={handleSaveAll}>
-            <Save className="mr-2 h-4 w-4" />
+          <Button onClick={handleSaveAll} className="gap-2">
+            <Database className="h-4 w-4" />
             Save All Mappings
           </Button>
         </CardFooter>
       </Card>
 
+      {/* Data Mapping Manager Dialog */}
+      <Dialog open={showDataMappingManager} onOpenChange={setShowDataMappingManager}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Data Mapping & Transfer</DialogTitle>
+            <DialogDescription>
+              Validate and transfer mapped data to the student table
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DataMappingManager
+            rawData={rawData}
+            columnMappings={mappings}
+            onMappingComplete={handleMappingComplete}
+            onValidationResult={handleValidationResult}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Column Dialog */}
       <Dialog open={showNewColumnDialog} onOpenChange={setShowNewColumnDialog}>
         <DialogContent>
           <DialogHeader>
@@ -481,6 +497,7 @@ export function HeaderMapping({
         </DialogContent>
       </Dialog>
 
+      {/* Edit Column Dialog */}
       <Dialog open={!!selectedColumn} onOpenChange={() => setSelectedColumn(null)}>
         <DialogContent>
           <DialogHeader>
