@@ -15,7 +15,8 @@ import {
   SortDesc,
   Grid,
   List,
-  RefreshCw
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import {
   Card,
@@ -61,6 +62,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
+import { DatabaseDiagnostics } from './database-diagnostics';
 
 const DEPARTMENTS_TYPED = DEPARTMENTS as readonly Department[];
 const YEARS_TYPED = YEARS as readonly Year[];
@@ -86,6 +88,7 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [showJobDialog, setShowJobDialog] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
   const [shortlistedStudents, setShortlistedStudents] = useState<Student[]>([]);
   const [showOnlyShortlisted, setShowOnlyShortlisted] = useState(false);
@@ -199,6 +202,15 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
         </div>
 
         <div className="flex items-center space-x-3">
+          <EnhancedButton
+            variant="tertiary"
+            size="sm"
+            onClick={() => setShowDiagnostics(true)}
+            leftIcon={<Database className="h-4 w-4" />}
+          >
+            Database Diagnostics
+          </EnhancedButton>
+
           <EnhancedButton
             variant="tertiary"
             size="sm"
@@ -869,6 +881,19 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
           </EnhancedButton>
         </div>
       </div>
+
+      {/* Database Diagnostics Dialog */}
+      <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Database Diagnostics</DialogTitle>
+            <DialogDescription>
+              Comprehensive database health check and troubleshooting
+            </DialogDescription>
+          </DialogHeader>
+          <DatabaseDiagnostics />
+        </DialogContent>
+      </Dialog>
 
       {/* Smart Shortlist Dialog */}
       <Dialog open={showJobDialog} onOpenChange={setShowJobDialog}>
