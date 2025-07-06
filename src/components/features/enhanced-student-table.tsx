@@ -16,7 +16,8 @@ import {
   Grid,
   List,
   RefreshCw,
-  Database
+  Database,
+  Settings
 } from 'lucide-react';
 import {
   Card,
@@ -57,12 +58,19 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '@/components/ui/tabs';
 import { Student } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ProgressIndicator } from '@/components/ui/progress-indicator';
 import { DatabaseDiagnostics } from './database-diagnostics';
+import { StudentDataManager } from './student-data-manager';
 
 const DEPARTMENTS_TYPED = DEPARTMENTS as readonly Department[];
 const YEARS_TYPED = YEARS as readonly Year[];
@@ -89,6 +97,7 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [showJobDialog, setShowJobDialog] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [showDataManager, setShowDataManager] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
   const [shortlistedStudents, setShortlistedStudents] = useState<Student[]>([]);
   const [showOnlyShortlisted, setShowOnlyShortlisted] = useState(false);
@@ -202,6 +211,15 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
         </div>
 
         <div className="flex items-center space-x-3">
+          <EnhancedButton
+            variant="tertiary"
+            size="sm"
+            onClick={() => setShowDataManager(true)}
+            leftIcon={<Settings className="h-4 w-4" />}
+          >
+            Data Manager
+          </EnhancedButton>
+
           <EnhancedButton
             variant="tertiary"
             size="sm"
@@ -892,6 +910,19 @@ export function EnhancedStudentTable({ students, onAddStudent, loading = false }
             </DialogDescription>
           </DialogHeader>
           <DatabaseDiagnostics />
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Data Manager Dialog */}
+      <Dialog open={showDataManager} onOpenChange={setShowDataManager}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Student Data Manager</DialogTitle>
+            <DialogDescription>
+              Manage database operations and data synchronization
+            </DialogDescription>
+          </DialogHeader>
+          <StudentDataManager />
         </DialogContent>
       </Dialog>
 
